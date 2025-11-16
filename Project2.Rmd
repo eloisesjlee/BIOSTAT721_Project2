@@ -1,0 +1,158 @@
+---
+title: "Project 2"
+author: "Eloise Lee"
+date: "2025-11-12"
+output: 
+  word_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Link to My Github Repository
+https://github.com/eloisesjlee/BIOSTAT721_Project2.git
+
+```{r, warning = FALSE, include=FALSE}
+# Load necessary packages
+library(here)
+library(readr)
+library(dplyr)
+library(lubridate)
+library(ggplot2)
+```
+
+```{r, include=FALSE}
+# Create function to process the three .csv files
+processdata <- function(file_path) {
+  # read csv files
+  df <- read_csv(file_path, show_col_types = FALSE) %>%
+    # remove duplicate rows
+    distinct() %>%
+    # rename pollutant columns
+    rename(
+      co_max8hr = "Daily Max 8-hour CO Concentration",
+      pm25_mean = "Daily Mean PM2.5 Concentration",
+      o3_max8hr = "Daily Max 8-hour Ozone Concentration"
+    ) %>%
+    # format date variable correctly
+    mutate(Date = as.Date(Date, format = "%m/%d/%Y")) %>%
+    # calculate daily average for multiple measurements
+    group_by(Date) %>%
+    summarise(
+      co_max8hr = mean(co_max8hr, na.rm = TRUE),
+      pm25_mean  = mean(pm25_mean,  na.rm = TRUE),
+      o3_max8hr  = mean(o3_max8hr,  na.rm = TRUE),
+      .groups = "drop"
+    )
+    # set negative to zero
+  for (nm in c("co_max8hr", "pm25_mean", "o3_max8hr")) {
+    x <- df[[nm]]
+    df[[nm]] <- ifelse(is.na(x), NA_real_, ifelse(x < 0, 0, x))
+  }
+  return(df)
+}
+```
+
+```{r, include=FALSE}
+# Load data files and process the data
+# Confirm project root
+here::here()
+# Run function on data sets
+data2018 <- processdata(here::here("data", "AQ_2018.csv"))
+data2019 <- processdata(here::here("data", "AQ_2019.csv"))
+data2020 <- processdata(here::here("data", "AQ_2020.csv"))
+```
+
+<br><br>
+
+## Plot of Monthly Average CO and O3 Concentrations
+```{r, echo = FALSE, include = TRUE, fig.width=8, fig.height=4}
+# Plot of monthly average CO and O3 concentration
+# combine daily data across three years
+all <- bind_rows(data2018, data2019, data2020) %>%
+  arrange(Date) %>%
+  mutate(year = year(Date))
+
+# function to compute 95% CI
+ci_95 <- function(x) {
+  # compute sample mean
+  m <- mean(x, na.rm = TRUE)
+  # compute standard error
+  se <- sd(x, na.rm = TRUE) / sqrt(sum(!is.na(x)))
+  # return mean and 95% CI
+  list(avg = m, lower = m - 1.96 * se, upper = m + 1.96 * se)
+}
+
+# compute monthly means with 95% CI
+monthly <- all %>%
+  mutate(month = month(Date, label = TRUE)) %>%
+  group_by(month) %>%
+  summarise(
+    # CO monthly mean and 95% CI
+    co_avg = ci_95(co_max8hr)$avg,
+    co_lower = ci_95(co_max8hr)$lower,
+    co_upper = ci_95(co_max8hr)$upper,
+    # PM2.5 monthly mean and 95% CI
+    pm25_avg = ci_95(pm25_mean)$avg,
+    pm25_lower = ci_95(pm25_mean)$lower,
+    pm25_upper = ci_95(pm25_mean)$upper,
+    # O3 monthly mean and 95% CI
+    o3_avg = ci_95(o3_max8hr)$avg,
+    o3_lower = ci_95(o3_max8hr)$lower,
+    o3_upper = ci_95(o3_max8hr)$upper,
+    .groups = "drop"
+  )
+
+# plot
+ggplot(monthly, aes(x = month)) +
+  # CO line
+  geom_line(aes(y = co_avg, color = "CO", group = 1), linewidth = 0.6, alpha = 0.7) +
+  # CO points + error bars
+  geom_point(aes(y = co_avg, color = "CO"), size = 1.5) +
+  geom_errorbar(aes(y = co_avg, color = "CO", ymin = co_lower, ymax = co_upper), width = 0.2) +
+  
+  # O3 line
+  geom_line(aes(y = o3_avg, color = "O3", group = 1), linewidth = 0.6, alpha = 0.7) +
+  # O3 points + error bars
+  geom_point(aes(y = o3_avg, color = "O3"), size = 1.5) +
+  geom_errorbar(aes(y = o3_avg, color = "O3", ymin = o3_lower, ymax = o3_upper), width = 0.2) +
+  
+  scale_color_manual(values = c("CO" = "plum3", "O3" = "lemonchiffon3")) +
+  # labels, titles, legends
+  labs(title = "Monthly Average CO and O3 Concentrations with 95% CI",
+       x = "Month", y = "Concentration", color = "Pollutant") +
+  theme_minimal()
+```
+
+<br><br><br>
+
+## Plot of Monthly PM2.5 Concentration Trends by Year
+```{r, echo = FALSE, include = TRUE, fig.width=8, fig.height=4}
+# plot
+all %>%
+  # extract month and year from the date
+  mutate(
+    month = month(Date, label = TRUE),
+    year = year(Date)
+  ) %>%
+  # compute monthly PM2.5 averages separately for each year
+  group_by(month, year) %>%
+  summarise(pm25_avg = mean(pm25_mean, na.rm = TRUE), .groups = "drop") %>%
+  # plot monthly PM2.5 by year
+  ggplot(aes(x = month, y = pm25_avg, color = factor(year), group = year)) +
+  # choice of geom: geom_line to show concentration changes over the months within each year
+  geom_line(linewidth = 1) +
+  # points at each monthly value
+  geom_point(size = 2) +
+  scale_color_manual(values = c("2018" = "khaki2", "2019" = "slategray3", "2020" = "plum3")) +
+  # titles and axis labels
+  labs(title = "Monthly PM2.5 Concentration Trends by Year",
+       x = "Month", y = "PM2.5 Concentration", color = "Year") +
+  theme_minimal()
+
+# Side note
+# Considered facets but placing all three years in a single plot made year-to-year comparisons easier. 
+# Therefore, customized 3 contrasting colors that are easy to see.
+```
