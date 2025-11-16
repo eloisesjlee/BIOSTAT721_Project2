@@ -22,4 +22,28 @@ BIOSTAT721_Project2/
 └── README.md            # This file
 ```
 ## Data Processing Function
+The custom R function `processdata()` does the following to each of `AQ_2018.csv`, `AQ_2019.csv`, `AQ_2020.csv`:
 
+- Rename pollutant variables (clean, short, readable names)
+- Parses dates correctly
+- Average multiple measurements per day
+- Removes duplicate rows
+- Identifies negative pollutant concentrations and sets them to zero
+- Returns a clean, tidy data frame for each year
+
+## Plots
+The project produces two required plots:
+### Plot 1: Monthly Average CO and O3 Concentration (2018-2020 Combined)
+- X-axis: month
+- Y-axis: pollutant concentration
+- Displays monthly averages across all 3 years with 95% confidence interval error bars
+
+### Plot 2: Monthly PM2.5 Concentration by Year
+- X-axis: month
+- Y-axis: PM2.5 concentration
+- `geom_line()` chosen to best convey patterns over time
+
+## Author
+**Eloise Lee**
+Master of Biostatistics, Duke University
+BIOSTAT721 - Fall 2025
