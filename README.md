@@ -15,11 +15,10 @@ The final output includes:
 ## Repository Structure
 ```{r}
 BIOSTAT721_Project2/
-├── data/                # Raw CSV files for 2018, 2019, 2020
-├── scripts/             # R scripts (functions, code for plot)
-├── Project2_Report.Rmd  # Main report (final submission)
-├── Project2_Report.docx # Knitted Word output
-└── README.md            # This file
+├── data/                  # Contains raw CSV files for 2018, 2019, 2020
+├── Project2.Rmd           # Main Rmarkdown file with codes
+├── Project2_Report.docx   # Knitted Word output
+└── README.md              # This file
 ```
 ## Data Processing Function
 The custom R function `processdata()` does the following to each of `AQ_2018.csv`, `AQ_2019.csv`, `AQ_2020.csv`:
