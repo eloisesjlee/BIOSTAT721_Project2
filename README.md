@@ -44,6 +44,6 @@ The project produces two required plots:
 - `geom_line()` chosen to best convey patterns over time
 
 ## Author
-**Eloise Lee**
-Master of Biostatistics, Duke University
+**Eloise Lee**  
+Master of Biostatistics, Duke University  
 BIOSTAT721 - Fall 2025
