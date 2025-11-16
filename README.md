@@ -1,4 +1,4 @@
-# BIOSTAT721_Project2Project 2
+# BIOSTAT721_Project2
 This respository contains all code, data, and documentation for Project 2 in BIOSTAT 721: Statistical Programming in R. It explores the association between various air pollutants and sickle cell disease (SCD) in Durham County, North Carolina, using EPA pollutant data and health system utilization data. 
 
 ## Project Overview
