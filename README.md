@@ -15,7 +15,7 @@ The final output includes:
 ## Repository Structure
 ```{r}
 BIOSTAT721_Project2/
-├── data/                  # Contains raw CSV files for 2018, 2019, 2020
+├── data                   # Contains raw CSV files for 2018, 2019, 2020
 ├── Project2.Rmd           # Main Rmarkdown file with codes
 ├── Project2_Report.docx   # Knitted Word output
 └── README.md              # This file
